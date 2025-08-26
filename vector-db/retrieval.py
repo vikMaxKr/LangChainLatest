@@ -23,9 +23,9 @@ if __name__ == "__main__":
 
     chain=PromptTemplate.from_template(template=query) | llm
 
-    result=chain.invoke(input={})
+   # result=chain.invoke(input={})
 
-    print(result.content)
+   # print(result.content)       # Without RAG, question directly to LLM
 
     vectorstore=PineconeVectorStore(
         index_name=os.environ["PINECONE_INDEX"],
@@ -33,9 +33,15 @@ if __name__ == "__main__":
     )
 
     retrieval_qa_chat_prompt = hub.pull("langchain-ai/retrieval-qa-chat")
+
     combine_docs_chain=create_stuff_documents_chain(llm, retrieval_qa_chat_prompt)
-    create_retrieval_chain(
+
+    retrieval_chain=create_retrieval_chain(
         retriever=vectorstore.as_retriever(),
         combine_docs_chain=combine_docs_chain
     )
+
+    result=retrieval_chain.invoke({"query":query})
+
+    print(result)
 
